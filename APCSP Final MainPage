@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0000cc;
+    }
+    
+    #ltrs {
+      text-align: center;
+      font-size: 100px;
+      padding-top: 150px;
+      padding-bottom: 150px;
+      font-family: "Arial Black"
+    }
+    
+    #userWord {
+      width: 600px;
+    }
+    
+    #userInput {
+      padding-top: 20px;
+    }
+  </style>
+
+</head>
+
+
+
+<body>
+  <div id = "ltrs" class = "container">
+    <?php
+      $servername = "localhost";
+      $username = "root";
+      $password = "";
+      $dbname = "gameplay";
+      
+      // Create connection
+      $conn = mysqli_connect($servername, $username, $password, $dbname);
+      // Check connection
+      if (!$conn) {
+          die("Connection failed: " . mysqli_connect_error());
+      }
+
+      $score = 0;
+      $file_handle = fopen("Dictionary.txt", "rb");
+      $words = array(fgets($file_handle));
+      
+      while ( !feof($file_handle) ) {
+        array_push($words,fgets($file_handle));
+      }
+      
+      fclose($file_handle);
+      
+      $randWord = "";
+      $letter1 = "";
+      $letter2 = "";
+      $randWord = $words[rand(0,58109)];
+      $letter1 = substr($randWord, 0, 1);
+      $letter2 = substr($randWord, -3,1);
+
+      $sql = "INSERT INTO gameplay (LetterOne, LetterTwo)
+      VALUES ('$letter1', '$letter2')";
+
+      if (mysqli_query($conn, $sql)) {
+        $last_id = mysqli_insert_id($conn);
+        echo "New record created successfully. Last inserted ID is: " . $last_id;
+      } else {
+          echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+      }
+
+      echo $letter1 . " ._._._._. " . $letter2;
+      
+      $word = ".";
+      $inputLetter1 = ".";
+      $inputLetter2 = ".";
+
+      function validate($data) {
+        $data = trim($data);
+        $data = stripslashes($data);
+        $data = htmlspecialchars($data);
+        return $data;
+      }
+      
+      if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $word = validate($_POST["word"]);
+        $inputLetter1 = substr($word, 0, 1);
+        $inputLetter2 = substr($word, -1);
+        
+        $sql = "INSERT INTO gameplay (UserInputWord)
+        VALUES ('$word')";
+
+        if (mysqli_query($conn, $sql)) {
+          echo "New record created successfully";
+        } else {
+            echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+        }
+      }
+
+      mysqli_close($conn);
+    ?>
+    
+  </div>
+      
+  <div id = "userWord" class = "container">
+    <div class = "card bg-light">
+      <div class = "card-body text-center">
+        <form action="" method="post">
+          <div id = "userInput" class="input-group mb-3">
+            <input type="text" class="form-control" name="word" id = "word">
+                
+            <div class="input-group-prepend">
+              <button class="btn btn-outline-primary" type="submit">Enter</button>  
+            </div>
+                      
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+   
+</body>
+</html>
